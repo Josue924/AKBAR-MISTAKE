@@ -6,9 +6,10 @@ import { BADGE_DEFINITIONS, QUIZ_LENGTH } from '../constants';
 interface ResultsScreenProps {
   category: Category;
   score: number;
+  correctCount: number;
   userProgress: UserProgress;
   newBadges: BadgeType[];
-  questions: QuizQuestion[]; // Needed to calculate correct answers
+  questions: QuizQuestion[];
   onPlayAgain: () => void;
   onGoHome: () => void;
 }
@@ -16,17 +17,14 @@ interface ResultsScreenProps {
 const ResultsScreen: React.FC<ResultsScreenProps> = ({
   category,
   score,
+  correctCount,
   userProgress,
   newBadges,
-  questions,
   onPlayAgain,
   onGoHome
 }) => {
-  // Correct answers are calculated based on the score and difficulty.
-  // This is an approximation. A better way would be to store each answer.
-  // Since we don't have user answers, we are passing score to calculate it.
-  const correctCount = userProgress.highScores[category.name] === score ? QUIZ_LENGTH : Math.round(score/15);
   const incorrectCount = QUIZ_LENGTH - correctCount;
+  const isNewHighScore = userProgress.highScores[category.name] === score && score > 0;
 
   const shareText = `I just scored ${score} points in the ${category.name} quiz on QuizBot! I've earned ${userProgress.badges.length} badges so far. Try to beat my score!`;
 
@@ -49,7 +47,7 @@ const ResultsScreen: React.FC<ResultsScreenProps> = ({
             <span className="text-green-400">{correctCount} Correct</span>
             <span className="text-red-400">{incorrectCount} Incorrect</span>
           </div>
-          {userProgress.highScores[category.name] === score && (
+          {isNewHighScore && (
              <p className="text-yellow-400 mt-4 font-semibold">New High Score for this category!</p>
           )}
         </div>

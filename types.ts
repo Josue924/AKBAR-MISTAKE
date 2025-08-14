@@ -1,4 +1,3 @@
-
 export enum Screen {
   Home = 'HOME',
   Quiz = 'QUIZ',
@@ -28,6 +27,8 @@ export interface UserProgress {
   score: number;
   badges: BadgeType[];
   highScores: Record<string, number>;
+  quizCount: number;
+  totalCorrectAnswers: number;
 }
 
 export enum BadgeType {

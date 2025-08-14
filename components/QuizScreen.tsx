@@ -14,6 +14,7 @@ const QuizScreen: React.FC<QuizScreenProps> = ({ category, onQuizComplete }) => 
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [score, setScore] = useState(0);
+  const [correctAnswersCount, setCorrectAnswersCount] = useState(0);
   const [difficulty, setDifficulty] = useState<Difficulty>(Difficulty.Easy);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
@@ -40,39 +41,30 @@ const QuizScreen: React.FC<QuizScreenProps> = ({ category, onQuizComplete }) => 
     setSelectedAnswer(selectedIndex);
     setIsAnswered(true);
     const currentQuestion = questions[currentQuestionIndex];
-    
-    if (selectedIndex === currentQuestion.correctAnswerIndex) {
+    const isCorrect = selectedIndex === currentQuestion.correctAnswerIndex;
+
+    if (isCorrect) {
       setScore(prev => prev + POINTS_PER_DIFFICULTY[currentQuestion.difficulty]);
-      // Increase difficulty for next question
+      setCorrectAnswersCount(prev => prev + 1);
       setDifficulty(d => d === Difficulty.Easy ? Difficulty.Medium : Difficulty.Hard);
     } else {
-      // Decrease difficulty for next question
       setDifficulty(d => d === Difficulty.Hard ? Difficulty.Medium : Difficulty.Easy);
     }
 
     setTimeout(() => {
       if (currentQuestionIndex < QUIZ_LENGTH - 1) {
         setCurrentQuestionIndex(prev => prev + 1);
-        if (currentQuestionIndex + 1 === questions.length) {
+        if (currentQuestionIndex + 1 >= questions.length) {
           fetchNextQuestion();
         } else {
           setIsAnswered(false);
           setSelectedAnswer(null);
         }
       } else {
-        const correctCount = questions.filter((q, i) => {
-            // This is a rough check since we don't store answers.
-            // A more robust implementation would store user answers.
-            // For now, let's assume we can re-evaluate based on a stored value if we had one.
-            // A better way would be to track correct answers as they happen.
-            // We can add a correctAnswers state. Let's do that.
-            return true; // placeholder
-        }).length;
-        // Let's create a more accurate correct answer count
-        let correctAnswers = 0;
-        //This logic is flawed as we don't have the user's answers. Let's pass this up.
-        // It will be calculated in onQuizComplete call
-        onQuizComplete(score, 0, questions);
+        // Due to async state updates, calculate final values directly from current action
+        const finalScore = isCorrect ? score + POINTS_PER_DIFFICULTY[currentQuestion.difficulty] : score;
+        const finalCorrectCount = isCorrect ? correctAnswersCount + 1 : correctAnswersCount;
+        onQuizComplete(finalScore, finalCorrectCount, questions);
       }
     }, 1500);
   };
